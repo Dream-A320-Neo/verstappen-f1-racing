@@ -9,7 +9,7 @@
 var GL3D = (function () {
   var gl = null, canvas = null;
   var prog = null, loc = {};
-  var worldMesh = null, fenceMesh = null;
+  var worldMeshes = [];   // 世界按块切分，避免单网格顶点数超过 Uint16 索引上限
   var carCache = {};
   var state = { camera: 'chase', camPos: [0, 0, 0], camInit: false };
 
@@ -392,7 +392,7 @@ var GL3D = (function () {
   }
 
   function draw(race, dt) {
-    if (!gl || !worldMesh) return;   // 没有 WebGL 就不画 3D，HUD 仍可用
+    if (!gl || !worldMeshes.length) return;   // 没有 WebGL 就不画 3D，HUD 仍可用
     resize();
     var p = race.player, track = race.track;
     var smp = Track.sample3d(track, p.z, {});

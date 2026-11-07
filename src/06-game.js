@@ -117,6 +117,7 @@ var Game = (function () {
       if (e) e.classList.toggle('hidden', s !== name);
     });
     if (name === 'title') { HUD.hide(); Sfx.stopEngine(); }
+    if (name !== 'title') updateLights(null);
     app.screen = name;
   }
 
@@ -187,6 +188,25 @@ var Game = (function () {
       '<div><div class="k">总时间</div><div class="v">' + Util.fmtTime(r.time * 1000) + '</div></div>' +
       '<div><div class="k">碰撞</div><div class="v">' + (r.contactHits || 0) + ' 次</div></div>';
     showScreen('result');
+  }
+
+  // ---------------- 起跑灯 ----------------
+  var lightEls = null, lightState = null;
+  function updateLights(r) {
+    if (!lightEls) lightEls = Array.prototype.slice.call(document.querySelectorAll('#lights .lg'));
+    var wrap = document.getElementById('lights');
+    if (!r || r.phase !== 'countdown') {
+      if (lightState !== 'off') { if (wrap) wrap.classList.add('hidden'); lightState = 'off'; }
+      return;
+    }
+    if (wrap) wrap.classList.remove('hidden');
+    var remain = r.countdown;
+    // 倒计时 4.2 秒 → 先亮 1 盏、再 2 盏…最后 5 盏全亮，然后熄灭起步
+    var lit = Math.max(0, Math.min(5, Math.ceil((4.2 - remain) / 0.72)));
+    if (lit !== lightState) {
+      lightState = lit;
+      lightEls.forEach(function (e, i) { e.classList.toggle('on', i < lit); e.classList.remove('go'); });
+    }
   }
 
   // ---------------- 输入 ----------------
@@ -267,6 +287,7 @@ var Game = (function () {
       var spdPct = Util.clamp(p.speed / Cars.MAX_SPEED, 0, 1);
       Sfx.updateEngine(spdPct, Math.max(p.throttle || 0, 0.4), true);
       if (app.race.phase === 'finished' && app.screen !== 'result') finishRace();
+      updateLights(app.race);
       if (app.race.phase === 'countdown') {
         var lastCount = app.race._lastCount == null ? 5 : app.race._lastCount;
         var cur = Math.ceil(app.race.countdown);

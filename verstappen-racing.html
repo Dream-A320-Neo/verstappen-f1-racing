@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>MAX 33 · 极速王座 — F1 竞速 V1.2</title>
+<title>MAX 33 · 极速王座 — F1 竞速 V1.3</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { width: 100%; height: 100%; overflow: hidden; background: #07090d; }
@@ -59,6 +59,13 @@
   .msg .sub { display: block; font-size: 11.5px; opacity: .66; margin-top: 2px; }
   @keyframes msgIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
 
+  #lights { position: absolute; left: 50%; top: 14%; transform: translateX(-50%); display: flex; gap: 14px;
+    background: rgba(8,12,20,.72); border: 1px solid rgba(255,255,255,.10); border-radius: 14px; padding: 14px 20px 8px; }
+  #lights .lg { width: 30px; height: 30px; border-radius: 50%; background: #3a0a0a;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,.7); transition: background .08s, box-shadow .08s; }
+  #lights .lg.on { background: #ff1a1a; box-shadow: 0 0 18px #ff1a1a, inset 0 2px 6px rgba(0,0,0,.35); }
+  #lights .lg.go { background: #35e06a; box-shadow: 0 0 20px #35e06a; }
+  #lights .lglabel { position: absolute; left: 0; right: 0; bottom: -16px; text-align: center; font-size: 10px; letter-spacing: 3px; opacity: .5; }
   #hint { position: absolute; left: 50%; bottom: 96px; transform: translateX(-50%); font-size: 12px; opacity: .42; letter-spacing: .4px; white-space: nowrap; }
 
   /* ---------- 全屏页面 ---------- */
@@ -122,6 +129,11 @@
     <div id="ers"><i></i></div>
   </div>
   <div id="minimap-wrap"><canvas id="minimap" width="288" height="288"></canvas></div>
+  <div id="lights" class="hidden">
+    <div class="lg" data-i="0"></div><div class="lg" data-i="1"></div><div class="lg" data-i="2"></div>
+    <div class="lg" data-i="3"></div><div class="lg" data-i="4"></div>
+    <div class="lglabel">起步</div>
+  </div>
   <div id="msgs"></div>
   <div id="hint">C 切换视角 · P 暂停 · R 重新开始 · M 静音</div>
 </div>
@@ -129,7 +141,7 @@
 <div id="screen-title" class="screen hidden">
   <div class="panel">
     <div class="kicker">FORMULA 1 · 2026</div>
-    <div class="big">MAX <span class="num">33</span><br>极速王座 <span class="ver">V1.2</span></div>
+    <div class="big">MAX <span class="num">33</span><br>极速王座 <span class="ver">V1.3</span></div>
     <div class="sub">单文件 3D 竞速。六条赛道、二十台赛车、轮胎磨损与 ERS 加速。
       油门到底，把每个弯心都咬下来。</div>
     <div class="menu">
@@ -187,7 +199,7 @@
   </div>
 </div>
 
-<div id="loading">载入中… V1.2</div>
+<div id="loading">载入中… V1.3</div>
 <div id="fatal"></div>
 
 <script>
@@ -1067,7 +1079,7 @@ if (typeof module !== 'undefined' && module.exports) { module.exports = HUD; }
 var GL3D = (function () {
   var gl = null, canvas = null;
   var prog = null, loc = {};
-  var worldMesh = null, fenceMesh = null;
+  var worldMeshes = [];   // 世界按块切分，避免单网格顶点数超过 Uint16 索引上限
   var carCache = {};
   var state = { camera: 'chase', camPos: [0, 0, 0], camInit: false };
 
@@ -1450,7 +1462,7 @@ var GL3D = (function () {
   }
 
   function draw(race, dt) {
-    if (!gl || !worldMesh) return;   // 没有 WebGL 就不画 3D，HUD 仍可用
+    if (!gl || !worldMeshes.length) return;   // 没有 WebGL 就不画 3D，HUD 仍可用
     resize();
     var p = race.player, track = race.track;
     var smp = Track.sample3d(track, p.z, {});
@@ -1737,6 +1749,7 @@ var Game = (function () {
       if (e) e.classList.toggle('hidden', s !== name);
     });
     if (name === 'title') { HUD.hide(); Sfx.stopEngine(); }
+    if (name !== 'title') updateLights(null);
     app.screen = name;
   }
 
@@ -1807,6 +1820,25 @@ var Game = (function () {
       '<div><div class="k">总时间</div><div class="v">' + Util.fmtTime(r.time * 1000) + '</div></div>' +
       '<div><div class="k">碰撞</div><div class="v">' + (r.contactHits || 0) + ' 次</div></div>';
     showScreen('result');
+  }
+
+  // ---------------- 起跑灯 ----------------
+  var lightEls = null, lightState = null;
+  function updateLights(r) {
+    if (!lightEls) lightEls = Array.prototype.slice.call(document.querySelectorAll('#lights .lg'));
+    var wrap = document.getElementById('lights');
+    if (!r || r.phase !== 'countdown') {
+      if (lightState !== 'off') { if (wrap) wrap.classList.add('hidden'); lightState = 'off'; }
+      return;
+    }
+    if (wrap) wrap.classList.remove('hidden');
+    var remain = r.countdown;
+    // 倒计时 4.2 秒 → 先亮 1 盏、再 2 盏…最后 5 盏全亮，然后熄灭起步
+    var lit = Math.max(0, Math.min(5, Math.ceil((4.2 - remain) / 0.72)));
+    if (lit !== lightState) {
+      lightState = lit;
+      lightEls.forEach(function (e, i) { e.classList.toggle('on', i < lit); e.classList.remove('go'); });
+    }
   }
 
   // ---------------- 输入 ----------------
@@ -1887,6 +1919,7 @@ var Game = (function () {
       var spdPct = Util.clamp(p.speed / Cars.MAX_SPEED, 0, 1);
       Sfx.updateEngine(spdPct, Math.max(p.throttle || 0, 0.4), true);
       if (app.race.phase === 'finished' && app.screen !== 'result') finishRace();
+      updateLights(app.race);
       if (app.race.phase === 'countdown') {
         var lastCount = app.race._lastCount == null ? 5 : app.race._lastCount;
         var cur = Math.ceil(app.race.countdown);
