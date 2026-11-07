@@ -472,8 +472,8 @@ var GL3D = (function () {
     } else {
       var back = 6.8, up = 2.55;   // 车尾斜上方：后 6.8m、高 2.55m
       // 刚性跟随：位置与视线都用车身真实航向（不插值 → 零滞后）
-      eye = [px - Math.sin(yaw) * back, py + up, pz - Math.cos(yaw) * back];
-      target = [px + Math.sin(yaw) * 11, py + 1.05, pz + Math.cos(yaw) * 11];   // 注视点拉近到 11m，让车在画面中下方而不是被挤出去
+      eye = [px - Math.sin(yaw) * back, py + up, pz - Math.cos(yaw) * back];   // 车尾斜上方（车后方）
+      target = [px + Math.sin(yaw) * 11, py + 1.05, pz + Math.cos(yaw) * 11];   // 朝前方看
     }
 
     var fov = cockpit ? 76 : 68;
@@ -500,7 +500,7 @@ var GL3D = (function () {
       var s = Track.sample3d(track, c.z, {});
       var wx = s.x + s.nx * c.offset, wz = s.z + s.nz * c.offset, wy = s.y + 0.32;   // 路面在 +0.30，车踩在路面上
       var car = buildCar(c);
-      m4.compose(model, wx, wy, wz, c.heading, c.roll || 0, c.pitch || 0, 1, 1, 1);
+      m4.compose(model, wx, wy, wz, c.heading + Math.PI, c.roll || 0, c.pitch || 0, 1, 1, 1);   // +π：修正车模朝向（模型 +z 是车头）
       bindMesh(car.chassis, model);
       // 四轮
       var wb = 1.78, tw = 0.78;

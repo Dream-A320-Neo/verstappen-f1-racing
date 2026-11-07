@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>MAX 33 · 极速王座 — F1 竞速 V1.9.16</title>
+<title>MAX 33 · 极速王座 — F1 竞速 V1.9.18</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { width: 100%; height: 100%; overflow: hidden; background: #07090d; }
@@ -141,7 +141,7 @@
 <div id="screen-title" class="screen hidden">
   <div class="panel">
     <div class="kicker">FORMULA 1 · 2026</div>
-    <div class="big">MAX <span class="num">33</span><br>极速王座 <span class="ver">V1.9.16</span></div>
+    <div class="big">MAX <span class="num">33</span><br>极速王座 <span class="ver">V1.9.18</span></div>
     <div class="sub">单文件 3D 竞速。六条赛道、二十台赛车、轮胎磨损与 ERS 加速。
       油门到底，把每个弯心都咬下来。</div>
     <div class="row" style="margin-top:22px">
@@ -205,7 +205,7 @@
   </div>
 </div>
 
-<div id="loading">载入中… V1.9.16</div>
+<div id="loading">载入中… V1.9.18</div>
 <div id="fatal"></div>
 
 <script>
@@ -1599,8 +1599,8 @@ var GL3D = (function () {
     } else {
       var back = 6.8, up = 2.55;   // 车尾斜上方：后 6.8m、高 2.55m
       // 刚性跟随：位置与视线都用车身真实航向（不插值 → 零滞后）
-      eye = [px - Math.sin(yaw) * back, py + up, pz - Math.cos(yaw) * back];
-      target = [px + Math.sin(yaw) * 11, py + 1.05, pz + Math.cos(yaw) * 11];   // 注视点拉近到 11m，让车在画面中下方而不是被挤出去
+      eye = [px - Math.sin(yaw) * back, py + up, pz - Math.cos(yaw) * back];   // 车尾斜上方（车后方）
+      target = [px + Math.sin(yaw) * 11, py + 1.05, pz + Math.cos(yaw) * 11];   // 朝前方看
     }
 
     var fov = cockpit ? 76 : 68;
@@ -1627,7 +1627,7 @@ var GL3D = (function () {
       var s = Track.sample3d(track, c.z, {});
       var wx = s.x + s.nx * c.offset, wz = s.z + s.nz * c.offset, wy = s.y + 0.32;   // 路面在 +0.30，车踩在路面上
       var car = buildCar(c);
-      m4.compose(model, wx, wy, wz, c.heading, c.roll || 0, c.pitch || 0, 1, 1, 1);
+      m4.compose(model, wx, wy, wz, c.heading + Math.PI, c.roll || 0, c.pitch || 0, 1, 1, 1);   // +π：修正车模朝向（模型 +z 是车头）
       bindMesh(car.chassis, model);
       // 四轮
       var wb = 1.78, tw = 0.78;
