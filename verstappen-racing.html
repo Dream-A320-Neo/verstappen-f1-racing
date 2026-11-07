@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>MAX 33 · 极速王座 — F1 竞速 V1.9.13</title>
+<title>MAX 33 · 极速王座 — F1 竞速 V1.9.14</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { width: 100%; height: 100%; overflow: hidden; background: #07090d; }
@@ -141,7 +141,7 @@
 <div id="screen-title" class="screen hidden">
   <div class="panel">
     <div class="kicker">FORMULA 1 · 2026</div>
-    <div class="big">MAX <span class="num">33</span><br>极速王座 <span class="ver">V1.9.13</span></div>
+    <div class="big">MAX <span class="num">33</span><br>极速王座 <span class="ver">V1.9.14</span></div>
     <div class="sub">单文件 3D 竞速。六条赛道、二十台赛车、轮胎磨损与 ERS 加速。
       油门到底，把每个弯心都咬下来。</div>
     <div class="row" style="margin-top:22px">
@@ -205,7 +205,7 @@
   </div>
 </div>
 
-<div id="loading">载入中… V1.9.13</div>
+<div id="loading">载入中… V1.9.14</div>
 <div id="fatal"></div>
 
 <script>
@@ -616,7 +616,7 @@ var Race = (function () {
   var STEER_TRIM_A = 1.15;      // 高速收敛强度
   var STEER_TRIM_FROM = 0.45;   // 45% 车速开始收敛
   var STEER_CURVE_POW = 1.5;    // 转向响应曲线指数（起手更柔和）
-  var SLIP_MAX = 0.42;
+  var SLIP_MAX = 0.10;   // 最大横向滑移角：0.10 rad ≈ 5.7°，真实轮胎的抓地极限
   var CONTACT_Z = 3.45;         // 纵向碰撞距离（米）
   var CONTACT_LAT = 1.41;       // 横向碰撞距离（米）—— 车宽 2 米
   var HIT_COOLDOWN = 2.5;
@@ -791,6 +791,8 @@ var Race = (function () {
     p.z = (p.z + dist + track.trackLength) % track.trackLength;
     p.offset += v * dt * Math.sin(slip);   // 符号修正：车头偏左就向左漂，偏右就向右漂
     p.offset = Util.clamp(p.offset, -60, 60);
+    // 轻微回正：车还在路面上时，很小的横向偏移会被慢慢拉回中线附近（模拟轮胎自然回正）
+    if (Math.abs(p.offset) < Track.ROAD_HALF) p.offset *= (1 - 0.35 * dt);
 
     // 7) 冲出赛道：减速 + 扬尘（缓冲区/草地）
     var offAbs = Math.abs(p.offset);
@@ -895,7 +897,7 @@ var Race = (function () {
 
       var closing = p.speed - o.speed;
       // 分离，避免穿模
-      var push = (CONTACT_LAT - Math.abs(dOff)) * Util.sign(dOff || 1) * 0.5;
+      var push = (CONTACT_LAT - Math.abs(dOff)) * Util.sign(dOff || 1) * 0.15;
       p.offset += push; o.offset -= push;
       if (Math.abs(dz) < CONTACT_Z * 0.8) {
         if (dz > 0) { p.speed *= 0.94; } else { p.speed *= 0.99; }

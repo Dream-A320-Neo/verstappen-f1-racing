@@ -18,7 +18,7 @@ var Race = (function () {
   var STEER_TRIM_A = 1.15;      // 高速收敛强度
   var STEER_TRIM_FROM = 0.45;   // 45% 车速开始收敛
   var STEER_CURVE_POW = 1.5;    // 转向响应曲线指数（起手更柔和）
-  var SLIP_MAX = 0.42;
+  var SLIP_MAX = 0.10;   // 最大横向滑移角：0.10 rad ≈ 5.7°，真实轮胎的抓地极限
   var CONTACT_Z = 3.45;         // 纵向碰撞距离（米）
   var CONTACT_LAT = 1.41;       // 横向碰撞距离（米）—— 车宽 2 米
   var HIT_COOLDOWN = 2.5;
@@ -193,6 +193,8 @@ var Race = (function () {
     p.z = (p.z + dist + track.trackLength) % track.trackLength;
     p.offset += v * dt * Math.sin(slip);   // 符号修正：车头偏左就向左漂，偏右就向右漂
     p.offset = Util.clamp(p.offset, -60, 60);
+    // 轻微回正：车还在路面上时，很小的横向偏移会被慢慢拉回中线附近（模拟轮胎自然回正）
+    if (Math.abs(p.offset) < Track.ROAD_HALF) p.offset *= (1 - 0.35 * dt);
 
     // 7) 冲出赛道：减速 + 扬尘（缓冲区/草地）
     var offAbs = Math.abs(p.offset);
@@ -297,7 +299,7 @@ var Race = (function () {
 
       var closing = p.speed - o.speed;
       // 分离，避免穿模
-      var push = (CONTACT_LAT - Math.abs(dOff)) * Util.sign(dOff || 1) * 0.5;
+      var push = (CONTACT_LAT - Math.abs(dOff)) * Util.sign(dOff || 1) * 0.15;
       p.offset += push; o.offset -= push;
       if (Math.abs(dz) < CONTACT_Z * 0.8) {
         if (dz > 0) { p.speed *= 0.94; } else { p.speed *= 0.99; }
