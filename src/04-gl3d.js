@@ -46,9 +46,12 @@ var GL3D = (function () {
       var xx = uy * zz - uz * zy, xy = uz * zx - ux * zz, xz = ux * zy - uy * zx;
       var xl = Math.hypot(xx, xy, xz) || 1; xx /= xl; xy /= xl; xz /= xl;
       var yx = zy * xz - zz * xy, yy = zz * xx - zx * xz, yz = zx * xy - zy * xx;
-      o[0] = xx; o[1] = yx; o[2] = zx; o[3] = 0;
-      o[4] = xy; o[5] = yy; o[6] = zy; o[7] = 0;
-      o[8] = xz; o[9] = yz; o[10] = zz; o[11] = 0;
+      /* 列主序视图矩阵：第 0 列 = 右轴，第 1 列 = 上轴，第 2 列 = 反向视线。
+       * 之前写成了行主序（转置矩阵），整个世界被渲染成镜像/转动的样子：
+       * 车看着停在隔离带上、实际在往后跑、路面像一堵墙 —— 全是这个转置造成的。 */
+      o[0] = xx; o[1] = xy; o[2] = xz; o[3] = 0;
+      o[4] = yx; o[5] = yy; o[6] = yz; o[7] = 0;
+      o[8] = zx; o[9] = zy; o[10] = zz; o[11] = 0;
       o[12] = -(xx * ex + xy * ey + xz * ez);
       o[13] = -(yx * ex + yy * ey + yz * ez);
       o[14] = -(zx * ex + zy * ey + zz * ez);
