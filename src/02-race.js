@@ -178,11 +178,11 @@ var Race = (function () {
     var trimBase = Util.clamp((spdPct - STEER_TRIM_FROM) / (1 - STEER_TRIM_FROM), 0, 1);
     var steerTrim = 1 / (1 + STEER_TRIM_A * trimBase);
     var steerForYaw = Util.sign(p.steerSmooth) * Math.pow(Math.abs(p.steerSmooth), STEER_CURVE_POW);
-    var speedFactor = Util.clamp(0.34 + spdPct * 0.95, 0.34, 1.05);
+    var speedFactor = Util.clamp(0.62 + spdPct * 0.55, 0.62, 1.10);   // 低速也要有足够转向力
     var yawAuth = Util.clamp(0.62 + 0.38 * spdPct, 0.62, 1.05) * Util.clamp(grip, 0.7, 1.1);
     /* 转向必须随车速：真实车静止时打方向车头不会转。
      * 之前没有这个约束，按 D 就能以 0 速度原地转 79°，表现为「车快速往右转」。 */
-    var yawSpeed = Util.clamp(Math.abs(v) / 6, 0, 1);
+    var yawSpeed = Util.clamp(Math.abs(v) / 3, 0, 1);   // 3 m/s 以上就能全权转向
     p.heading += steerForYaw * steerTrim * YAW_RATE * yawAuth * speedFactor * yawSpeed * dt;
 
     // 6) 位移：按车头与赛道方向的夹角前进（打滑时衰减）
