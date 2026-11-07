@@ -347,6 +347,7 @@ var Game = (function () {
     beginSession: function (mode) { beginSession(mode); var self = this; setTimeout(function () { startRace(); }, 30); },
     startRace: startRace,
     state: function () { return { screen: app.screen, paused: app.paused, hasRace: !!app.race, mode: app.opts.mode }; },
+    input: function () { return { keys: Object.keys(keys).filter(function (k) { return keys[k]; }), parsed: readInput(), steerSmooth: app.race ? app.race.player.steerSmooth : null, heading: app.race ? app.race.player.heading : null }; },
     opts: app.opts,
   };
 
