@@ -201,7 +201,7 @@
   }
   try {
     Game.init();
-    if (!GL3D.available()) throw new Error('Canvas 2D 初始化失败');
+    if (!GL3D.available()) throw new Error('渲染器初始化失败：当前浏览器不支持 WebGL 1.0');
     document.getElementById('loading').classList.add('hidden');
   } catch (e) { fail(e); }
   window.addEventListener('error', function (ev) { fail(ev.error || ev.message); });
