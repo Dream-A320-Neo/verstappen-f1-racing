@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>MAX 33 · 极速王座 — F1 竞速</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #07090d; }
+  body { font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif; color: #e8edf5; user-select: none; }
+  #view { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .hidden { display: none !important; }
+  .mono { font-variant-numeric: tabular-nums; }
+
+  /* ---------- HUD ---------- */
+  #hud { position: absolute; inset: 0; pointer-events: none; }
+  #pos-box { position: absolute; left: 26px; top: 20px; text-shadow: 0 2px 12px rgba(0,0,0,.75); }
+  #pos-now { font-size: 60px; font-weight: 800; line-height: .95; letter-spacing: -2px; }
+  #pos-now small { font-size: 23px; font-weight: 600; opacity: .55; margin-left: 2px; }
+  #lap-line { font-size: 14px; letter-spacing: 1.5px; opacity: .8; margin-top: 4px; }
+
+  #board { position: absolute; left: 26px; top: 130px; width: 258px;
+    background: linear-gradient(180deg, rgba(8,12,20,.82), rgba(8,12,20,.6));
+    border: 1px solid rgba(255,255,255,.08); border-radius: 10px; padding: 8px 10px; backdrop-filter: blur(6px); }
+  .bd-row { display: flex; align-items: center; height: 22px; font-size: 12.5px; letter-spacing: .4px; }
+  .bd-row .p { width: 16px; opacity: .65; }
+  .bd-row .n { flex: 1; opacity: .92; }
+  .bd-row .g { font-size: 11px; opacity: .6; min-width: 48px; text-align: right; }
+  .bd-row.me { background: rgba(225,6,0,.16); border-radius: 6px; }
+  .bd-row.me .n { font-weight: 700; }
+
+  #time-box { position: absolute; left: 26px; bottom: 22px; font-size: 13px; letter-spacing: .5px; text-shadow: 0 2px 10px rgba(0,0,0,.8); }
+  #time-box .k { opacity: .55; }
+  #time-box .v { font-weight: 700; letter-spacing: 0; }
+
+  #speed-box { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); text-align: center; }
+  #spd { font-size: 64px; font-weight: 800; line-height: .95; letter-spacing: -2px; text-shadow: 0 3px 18px rgba(0,0,0,.85); }
+  #spd small { font-size: 17px; font-weight: 600; opacity: .55; margin-left: 4px; letter-spacing: 0; }
+  #spd-bar { width: 290px; height: 5px; border-radius: 3px; background: rgba(255,255,255,.12); margin-top: 5px; overflow: hidden; }
+  #spd-bar > i { display: block; height: 100%; width: 0; background: linear-gradient(90deg,#7ae582,#f5c400,#e10600); transition: width .06s linear; }
+  #gear-line { font-size: 13px; letter-spacing: 1.6px; margin-top: 5px; opacity: .82; }
+
+  #tyre { position: absolute; right: 28px; bottom: 24px; text-align: right; text-shadow: 0 2px 10px rgba(0,0,0,.8); }
+  #tyre .ring { display: inline-block; width: 32px; height: 32px; border-radius: 50%; border: 5px solid #e10600; vertical-align: middle; margin-right: 8px; }
+  #tyre .txt { font-size: 12px; letter-spacing: .6px; opacity: .8; vertical-align: middle; }
+  #tyre .wear, #ers { width: 118px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.14); margin: 6px 0 0 auto; overflow: hidden; }
+  #tyre .wear > i { display: block; height: 100%; background: #7ae582; width: 0; }
+  #ers > i { display: block; height: 100%; background: #38b6ff; width: 0; }
+
+  #minimap-wrap { position: absolute; right: 24px; top: 20px; width: 144px; height: 144px;
+    background: rgba(8,12,20,.55); border: 1px solid rgba(255,255,255,.09); border-radius: 14px; backdrop-filter: blur(6px); padding: 6px; }
+  #minimap { width: 100%; height: 100%; display: block; }
+
+  #msgs { position: absolute; left: 50%; top: 22px; transform: translateX(-50%); width: min(560px,62vw);
+    display: flex; flex-direction: column; gap: 6px; align-items: center; }
+  .msg { padding: 7px 16px; border-radius: 8px; font-size: 13.5px; letter-spacing: .3px;
+    background: rgba(8,12,20,.78); border: 1px solid rgba(255,255,255,.10); border-left: 3px solid #38b6ff;
+    backdrop-filter: blur(6px); animation: msgIn .18s ease-out; }
+  .msg .sub { display: block; font-size: 11.5px; opacity: .66; margin-top: 2px; }
+  @keyframes msgIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+  #hint { position: absolute; left: 50%; bottom: 96px; transform: translateX(-50%); font-size: 12px; opacity: .42; letter-spacing: .4px; white-space: nowrap; }
+
+  /* ---------- 全屏页面 ---------- */
+  .screen { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(ellipse at 50% 30%, rgba(12,18,30,.62), rgba(4,6,10,.9)); backdrop-filter: blur(3px); z-index: 10; }
+  .panel { width: min(860px,90vw); max-height: 88vh; overflow-y: auto;
+    background: linear-gradient(160deg, rgba(16,22,34,.94), rgba(8,11,18,.96));
+    border: 1px solid rgba(255,255,255,.10); border-radius: 18px; padding: 30px 34px 26px;
+    box-shadow: 0 30px 90px rgba(0,0,0,.6); }
+  .kicker { font-size: 11px; letter-spacing: 4px; color: #e10600; font-weight: 700; }
+  .big { font-size: clamp(42px,7vw,74px); font-weight: 900; line-height: .92; letter-spacing: -3px; margin: 6px 0 2px; }
+  .big .num { color: #e10600; }
+  .sub { font-size: 13.5px; line-height: 1.7; opacity: .62; margin-top: 10px; max-width: 620px; }
+  .menu { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 22px; }
+  .btn { appearance: none; border: 1px solid rgba(255,255,255,.14); cursor: pointer; background: rgba(255,255,255,.05);
+    color: #e8edf5; padding: 11px 20px; border-radius: 10px; font-size: 13.5px; letter-spacing: .5px;
+    font-family: inherit; transition: all .14s ease; font-weight: 600; }
+  .btn:hover { background: rgba(255,255,255,.12); transform: translateY(-1px); }
+  .btn.primary { background: #e10600; border-color: #e10600; }
+  .btn.primary:hover { background: #ff1801; }
+  .row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid rgba(255,255,255,.06); }
+  .row:first-of-type { border-top: 0; }
+  .row .label { width: 92px; font-size: 12px; letter-spacing: 1px; opacity: .5; flex-shrink: 0; }
+  .row .opts { display: flex; gap: 7px; flex-wrap: wrap; }
+  .opt { cursor: pointer; border: 1px solid rgba(255,255,255,.12); background: transparent; color: #cdd6e4;
+    padding: 6px 13px; border-radius: 8px; font-size: 12.5px; font-family: inherit; transition: all .12s ease; }
+  .opt:hover { border-color: rgba(255,255,255,.3); }
+  .opt.on { background: #e10600; border-color: #e10600; color: #fff; font-weight: 700; }
+  .kv { display: grid; grid-template-columns: repeat(auto-fit,minmax(120px,1fr)); gap: 10px; margin-top: 20px; }
+  .kv > div { background: rgba(255,255,255,.04); border-radius: 10px; padding: 11px 13px; }
+  .kv .k { font-size: 10.5px; letter-spacing: 1.4px; opacity: .45; }
+  .kv .v { font-size: 19px; font-weight: 700; margin-top: 3px; letter-spacing: -.5px; }
+  .help { margin-top: 16px; font-size: 11.5px; line-height: 1.9; opacity: .45; letter-spacing: .3px; }
+  .help b { color: #9fb3cc; font-weight: 600; }
+
+  #loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: #07090d; z-index: 50; font-size: 13px; letter-spacing: 2px; opacity: .7; }
+  #fatal { position: absolute; inset: 0; display: none; z-index: 60; padding: 40px; background: #0a0d12;
+    font-family: ui-monospace, monospace; font-size: 12.5px; color: #ff8f8f; white-space: pre-wrap; overflow: auto; line-height: 1.6; }
+</style>
+</head>
+<body>
+<canvas id="view"></canvas>
+
+<div id="hud" class="hidden">
+  <div id="pos-box"><div id="pos-now">P<small>1</small></div><div id="lap-line">LAP 1/3</div></div>
+  <div id="board"></div>
+  <div id="time-box">
+    <div><span class="k">最快圈</span> <span class="v mono" id="best-lap">--:--.---</span></div>
+    <div><span class="k">上圈</span> <span class="v mono" id="last-lap">--:--.---</span></div>
+    <div><span class="k">总计</span> <span class="v mono" id="total-time">--:--.---</span></div>
+  </div>
+  <div id="speed-box">
+    <div id="spd">0<small>km/h</small></div>
+    <div id="spd-bar"><i></i></div>
+    <div id="gear-line">档 1 · ERS 100%</div>
+  </div>
+  <div id="tyre">
+    <div><span class="ring" id="tyre-ring"></span><span class="txt" id="tyre-name">中性胎 0%</span></div>
+    <div class="wear"><i id="tyre-wear"></i></div>
+    <div id="ers"><i></i></div>
+  </div>
+  <div id="minimap-wrap"><canvas id="minimap" width="288" height="288"></canvas></div>
+  <div id="msgs"></div>
+  <div id="hint">C 切换视角 · P 暂停 · R 重新开始 · M 静音</div>
+</div>
+
+<div id="screen-title" class="screen hidden">
+  <div class="panel">
+    <div class="kicker">FORMULA 1 · 2026</div>
+    <div class="big">MAX <span class="num">33</span><br>极速王座</div>
+    <div class="sub">单文件 3D 竞速。六条赛道、二十台赛车、轮胎磨损与 ERS 加速。
+      油门到底，把每个弯心都咬下来。</div>
+    <div class="menu">
+      <button class="btn primary" id="btn-race">大奖赛</button>
+      <button class="btn" id="btn-quali">单圈计时</button>
+      <button class="btn" id="btn-endless">无尽挑战</button>
+    </div>
+    <div class="row" style="margin-top:22px"><div class="label">赛道</div><div class="opts" id="track-opts"></div></div>
+    <div class="row"><div class="label">天气</div><div class="opts" id="weather-opts"></div></div>
+    <div class="row"><div class="label">难度</div><div class="opts" id="diff-opts"></div></div>
+    <div class="row"><div class="label">视角</div><div class="opts" id="cam-opts"></div></div>
+    <div class="help">
+      <b>W / ↑</b> 油门 · <b>S / ↓</b> 刹车 · <b>A D / ← →</b> 转向 · <b>空格</b> ERS · <b>C</b> 视角 ·
+      <b>P</b> 暂停 · <b>R</b> 重开 · <b>M</b> 静音<br>
+      手柄：RT 油门 / LT 刹车 / 左摇杆转向 / A 键 ERS
+    </div>
+  </div>
+</div>
+
+<div id="screen-brief" class="screen hidden">
+  <div class="panel">
+    <div class="kicker" id="brief-kicker">RACE</div>
+    <div class="big" id="brief-title">赛道</div>
+    <div class="sub" id="brief-sub"></div>
+    <div class="kv" id="brief-kv"></div>
+    <div class="menu">
+      <button class="btn primary" id="btn-go">发车</button>
+      <button class="btn" id="btn-back">返回</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-result" class="screen hidden">
+  <div class="panel">
+    <div class="kicker" id="res-kicker">RESULT</div>
+    <div class="big" id="res-title">P1</div>
+    <div class="sub" id="res-sub"></div>
+    <div class="kv" id="res-kv"></div>
+    <div class="menu">
+      <button class="btn primary" id="btn-again">再来一场</button>
+      <button class="btn" id="btn-menu">回到首页</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-pause" class="screen hidden">
+  <div class="panel" style="width:min(420px,86vw)">
+    <div class="kicker">PAUSED</div>
+    <div class="big" style="font-size:44px">已暂停</div>
+    <div class="menu">
+      <button class="btn primary" id="btn-resume">继续</button>
+      <button class="btn" id="btn-restart">重新开始</button>
+      <button class="btn" id="btn-quit">退出</button>
+    </div>
+  </div>
+</div>
+
+<div id="loading">载入中…</div>
+<div id="fatal"></div>
+
+<script>
+/*__MODULES__*/
+
+(function boot() {
+  var fatal = document.getElementById('fatal');
+  function fail(e) {
+    fatal.style.display = 'block';
+    fatal.textContent = '启动失败：\n' + (e && e.stack ? e.stack : e);
+  }
+  try {
+    if (!window.GL3D || !GL3D.available()) throw new Error('WebGL 初始化失败，请使用支持 WebGL 的浏览器');
+    Game.init();
+    document.getElementById('loading').classList.add('hidden');
+  } catch (e) { fail(e); }
+  window.addEventListener('error', function (ev) { fail(ev.error || ev.message); });
+})();
+</script>
+</body>
+</html>
