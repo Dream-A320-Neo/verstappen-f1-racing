@@ -7,6 +7,7 @@ var HUD = (function () {
   var el = {};
   var boardRows = [];
   var lastMsgKey = '';
+  var hudFrame = 0;
 
   function $(id) { return document.getElementById(id); }
 
@@ -98,7 +99,7 @@ var HUD = (function () {
       }).join('');
     }
 
-    drawMinimap(r);
+    if ((hudFrame++ & 3) === 0) drawMinimap(r);   // 小地图每 4 帧重绘一次，降低开销
   }
 
   // 小地图：赛道轮廓 + 所有车辆位置

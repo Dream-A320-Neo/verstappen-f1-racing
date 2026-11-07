@@ -274,16 +274,16 @@ var Game = (function () {
   // ---------------- 主循环 ----------------
   function frame(now) {
     requestAnimationFrame(frame);
-    var dt = Math.min(0.05, Math.max(0.0005, (now - app.last) / 1000));
+    var dt = Math.min(0.35, Math.max(0.0005, (now - app.last) / 1000));   // 即便 3fps 也按真实时间推进   // 上限放宽：低帧率时游戏时间仍接近真实时间
     app.last = now;
     app.attractT += dt;
 
     if (app.race && !app.paused) {
       var input = readInput();
       // 固定步长积分（60Hz），保证物理稳定
-      app.acc = Math.min(app.acc + dt, 0.2);
+      app.acc = Math.min(app.acc + dt, 0.6);
       var steps = 0;
-      while (app.acc >= 1 / 60 && steps < 5) {
+      while (app.acc >= 1 / 60 && steps < 32) {
         Race.update(app.race, 1 / 60, input);
         app.acc -= 1 / 60; steps++;
       }
