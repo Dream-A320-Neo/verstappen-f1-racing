@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>MAX 33 · 极速王座 — F1 竞速 V1.5</title>
+<title>MAX 33 · 极速王座 — F1 竞速 V1.7</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { width: 100%; height: 100%; overflow: hidden; background: #07090d; }
@@ -141,7 +141,7 @@
 <div id="screen-title" class="screen hidden">
   <div class="panel">
     <div class="kicker">FORMULA 1 · 2026</div>
-    <div class="big">MAX <span class="num">33</span><br>极速王座 <span class="ver">V1.5</span></div>
+    <div class="big">MAX <span class="num">33</span><br>极速王座 <span class="ver">V1.7</span></div>
     <div class="sub">单文件 3D 竞速。六条赛道、二十台赛车、轮胎磨损与 ERS 加速。
       油门到底，把每个弯心都咬下来。</div>
     <div class="menu">
@@ -199,7 +199,7 @@
   </div>
 </div>
 
-<div id="loading">载入中… V1.5</div>
+<div id="loading">载入中… V1.7</div>
 <div id="fatal"></div>
 
 <script>
@@ -1209,6 +1209,47 @@ var GL3D = (function () {
         return api;
       },
       tri: function (a, b, c, color) { pushTri(a, b, c, color); return api; },
+      /** 沿 z 轴放样：sections = [{z, pts:[[x,y],...]}]，每层点数相同 */
+      loft: function (sections, color) {
+        var C = color || [1, 1, 1];
+        for (var i = 0; i + 1 < sections.length; i++) {
+          var A = sections[i], B = sections[i + 1];
+          for (var k = 0; k + 1 < A.pts.length; k++) {
+            var a0 = [A.pts[k][0], A.pts[k][1], A.z], a1 = [A.pts[k + 1][0], A.pts[k + 1][1], A.z];
+            var b0 = [B.pts[k][0], B.pts[k][1], B.z], b1 = [B.pts[k + 1][0], B.pts[k + 1][1], B.z];
+            var ux = a1[0] - a0[0], uy = a1[1] - a0[1], uz = a1[2] - a0[2];
+            var vx = b0[0] - a0[0], vy = b0[1] - a0[1], vz = b0[2] - a0[2];
+            var nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+            var nl = Math.hypot(nx, ny, nz) || 1;
+            pushQuadN(a0, a1, b1, b0, C, nx / nl, ny / nl, nz / nl);
+          }
+        }
+        return api;
+      },
+      /** 沿三维折线生成细管（Halo 用）：pts=[[x,y,z],...], r=半径 */
+      tube: function (pts, r, color) {
+        var C = color || [0.1, 0.1, 0.12], SIDES = 6;
+        for (var i = 0; i + 1 < pts.length; i++) {
+          var p0 = pts[i], p1 = pts[i + 1];
+          var dx = p1[0] - p0[0], dy = p1[1] - p0[1], dz = p1[2] - p0[2];
+          var dl = Math.hypot(dx, dy, dz) || 1;
+          var rx = 0, ry = 1, rz = 0;
+          if (Math.abs(dy / dl) > 0.9) { rx = 1; ry = 0; }
+          var ux = dy * rz - dz * ry, uy = dz * rx - dx * rz, uz = dx * ry - dy * rx;
+          var ul = Math.hypot(ux, uy, uz) || 1; ux /= ul; uy /= ul; uz /= ul;
+          var vx = dy * uz - dz * uy, vy = dz * ux - dx * uz, vz = dx * uy - dy * ux;
+          for (var s = 0; s < SIDES; s++) {
+            var t0 = (s / SIDES) * Math.PI * 2, t1 = ((s + 1) / SIDES) * Math.PI * 2;
+            var c0 = Math.cos(t0) * r, s0 = Math.sin(t0) * r, c1 = Math.cos(t1) * r, s1 = Math.sin(t1) * r;
+            var q0 = [p0[0] + ux * c0 + vx * s0, p0[1] + uy * c0 + vy * s0, p0[2] + uz * c0 + vz * s0];
+            var q1 = [p0[0] + ux * c1 + vx * s1, p0[1] + uy * c1 + vy * s1, p0[2] + uz * c1 + vz * s1];
+            var q2 = [p1[0] + ux * c1 + vx * s1, p1[1] + uy * c1 + vy * s1, p1[2] + uz * c1 + vz * s1];
+            var q3 = [p1[0] + ux * c0 + vx * s0, p1[1] + uy * c0 + vy * s0, p1[2] + uz * c0 + vz * s0];
+            pushQuadN(q0, q1, q2, q3, C, q0[0] - p0[0], q0[1] - p0[1], q0[2] - p0[2]);
+          }
+        }
+        return api;
+      },
       upload: function () {
         if (!pos.length) return null;
         var vb = gl.createBuffer();
@@ -1561,7 +1602,7 @@ var GL3D = (function () {
 
     // 世界
     m4.identity(model);
-    bindMesh(worldMesh, model);
+    for (var wi2 = 0; wi2 < worldMeshes.length; wi2++) if (worldMeshes[wi2]) bindMesh(worldMeshes[wi2], model);
 
     // 车辆
     var me = p;
