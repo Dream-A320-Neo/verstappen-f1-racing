@@ -188,7 +188,7 @@ var Race = (function () {
     var slip = Util.clamp(err, -maxSlip, maxSlip);
     var dist = v * Math.cos(slip) * dt;
     p.z = (p.z + dist + track.trackLength) % track.trackLength;
-    p.offset += v * dt * Math.sin(-slip);
+    p.offset += v * dt * Math.sin(slip);   // 符号修正：车头偏左就向左漂，偏右就向右漂
     p.offset = Util.clamp(p.offset, -60, 60);
 
     // 7) 冲出赛道：减速 + 扬尘（缓冲区/草地）
@@ -271,7 +271,7 @@ var Race = (function () {
     var maxSlip = Util.clamp(0.30 * grip, 0.10, SLIP_MAX);
     var slip2 = Util.clamp(err2, -maxSlip, maxSlip);
     c.z = (c.z + c.speed * Math.cos(slip2) * dt + track.trackLength) % track.trackLength;
-    c.offset += c.speed * dt * Math.sin(-slip2);
+    c.offset += c.speed * dt * Math.sin(slip2);   // 同上，符号修正
     var lim = Track.ROAD_HALF + Track.RUNOFF_MAX - 2;
     c.offset = Util.clamp(c.offset, -lim, lim);
     c.wear = Util.clamp(c.wear + dt * 0.0035, 0, 1);
