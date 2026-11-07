@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>MAX 33 · 极速王座 — F1 竞速 V1.9.4</title>
+<title>MAX 33 · 极速王座 — F1 竞速 V1.9.5</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { width: 100%; height: 100%; overflow: hidden; background: #07090d; }
@@ -141,7 +141,7 @@
 <div id="screen-title" class="screen hidden">
   <div class="panel">
     <div class="kicker">FORMULA 1 · 2026</div>
-    <div class="big">MAX <span class="num">33</span><br>极速王座 <span class="ver">V1.9.4</span></div>
+    <div class="big">MAX <span class="num">33</span><br>极速王座 <span class="ver">V1.9.5</span></div>
     <div class="sub">单文件 3D 竞速。六条赛道、二十台赛车、轮胎磨损与 ERS 加速。
       油门到底，把每个弯心都咬下来。</div>
     <div class="row" style="margin-top:22px">
@@ -205,7 +205,7 @@
   </div>
 </div>
 
-<div id="loading">载入中… V1.9.4</div>
+<div id="loading">载入中… V1.9.5</div>
 <div id="fatal"></div>
 
 <script>
@@ -2018,16 +2018,16 @@ var Game = (function () {
   // ---------------- 主循环 ----------------
   function frame(now) {
     requestAnimationFrame(frame);
-    var dt = Math.min(0.35, Math.max(0.0005, (now - app.last) / 1000));   // 即便 3fps 也按真实时间推进   // 上限放宽：低帧率时游戏时间仍接近真实时间
+    var dt = Math.min(0.05, Math.max(0.0005, (now - app.last) / 1000));   // 单帧上限 0.05s：防止卡顿后瞬移   // 上限放宽：低帧率时游戏时间仍接近真实时间
     app.last = now;
     app.attractT += dt;
 
     if (app.race && !app.paused) {
       var input = readInput();
       // 固定步长积分（60Hz），保证物理稳定
-      app.acc = Math.min(app.acc + dt, 0.6);
+      app.acc = Math.min(app.acc + dt, 0.12);
       var steps = 0;
-      while (app.acc >= 1 / 60 && steps < 32) {
+      while (app.acc >= 1 / 60 && steps < 6) {
         Race.update(app.race, 1 / 60, input);
         app.acc -= 1 / 60; steps++;
       }
