@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>MAX 33 · 极速王座 — F1 竞速 V1.9.11</title>
+<title>MAX 33 · 极速王座 — F1 竞速 V1.9.12</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { width: 100%; height: 100%; overflow: hidden; background: #07090d; }
@@ -141,7 +141,7 @@
 <div id="screen-title" class="screen hidden">
   <div class="panel">
     <div class="kicker">FORMULA 1 · 2026</div>
-    <div class="big">MAX <span class="num">33</span><br>极速王座 <span class="ver">V1.9.11</span></div>
+    <div class="big">MAX <span class="num">33</span><br>极速王座 <span class="ver">V1.9.12</span></div>
     <div class="sub">单文件 3D 竞速。六条赛道、二十台赛车、轮胎磨损与 ERS 加速。
       油门到底，把每个弯心都咬下来。</div>
     <div class="row" style="margin-top:22px">
@@ -205,7 +205,7 @@
   </div>
 </div>
 
-<div id="loading">载入中… V1.9.11</div>
+<div id="loading">载入中… V1.9.12</div>
 <div id="fatal"></div>
 
 <script>
@@ -781,7 +781,7 @@ var Race = (function () {
     /* 转向必须随车速：真实车静止时打方向车头不会转。
      * 之前没有这个约束，按 D 就能以 0 速度原地转 79°，表现为「车快速往右转」。 */
     var yawSpeed = Util.clamp(Math.abs(v) / 6, 0, 1);
-    p.heading -= steerForYaw * steerTrim * YAW_RATE * yawAuth * speedFactor * yawSpeed * dt;
+    p.heading += steerForYaw * steerTrim * YAW_RATE * yawAuth * speedFactor * yawSpeed * dt;
 
     // 6) 位移：按车头与赛道方向的夹角前进（打滑时衰减）
     var err = Util.wrapAngle(p.heading - smp.h);
@@ -861,7 +861,7 @@ var Race = (function () {
     var speedFactor = Util.clamp(0.34 + spdPct * 0.95, 0.34, 1.05);
     var yawAuth = Util.clamp(0.62 + 0.38 * spdPct, 0.62, 1.05) * Util.clamp(grip, 0.7, 1.1);
     var aiYawSpeed = Util.clamp(Math.abs(c.speed) / 6, 0, 1);
-    c.heading -= steer * YAW_RATE * yawAuth * speedFactor * aiYawSpeed * dt;
+    c.heading += steer * YAW_RATE * yawAuth * speedFactor * aiYawSpeed * dt;
 
     // 速度
     if (c.speed < limit) c.speed = Math.min(limit, c.speed + Cars.ACCEL * grip * throttle * dt);
@@ -1595,7 +1595,7 @@ var GL3D = (function () {
       eye = [px + fx * 0.2 + rx * 0.18, py + 1.34, pz + fz * 0.2 + rz * 0.18];
       target = [px + fx * 30, py + 1.25, pz + fz * 30];
     } else {
-      var back = 7.2, up = 2.15;
+      var back = 8.2, up = 3.0;
       // 刚性跟随：位置与视线都用车身真实航向（不插值 → 零滞后）
       eye = [px - Math.sin(yaw) * back, py + up, pz - Math.cos(yaw) * back];
       target = [px + Math.sin(yaw) * 22, py + 1.25, pz + Math.cos(yaw) * 22];

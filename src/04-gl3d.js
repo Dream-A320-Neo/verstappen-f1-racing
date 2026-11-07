@@ -470,7 +470,7 @@ var GL3D = (function () {
       eye = [px + fx * 0.2 + rx * 0.18, py + 1.34, pz + fz * 0.2 + rz * 0.18];
       target = [px + fx * 30, py + 1.25, pz + fz * 30];
     } else {
-      var back = 7.2, up = 2.15;
+      var back = 8.2, up = 3.0;
       // 刚性跟随：位置与视线都用车身真实航向（不插值 → 零滞后）
       eye = [px - Math.sin(yaw) * back, py + up, pz - Math.cos(yaw) * back];
       target = [px + Math.sin(yaw) * 22, py + 1.25, pz + Math.cos(yaw) * 22];
