@@ -5,7 +5,7 @@
 
 var Game = (function () {
   var app = {
-    opts: { trackId: 'sakhir', weatherId: 'dry', difficulty: 'normal', camera: 'chase' },
+    opts: { trackId: 'sakhir', weatherId: 'dry', difficulty: 'normal', camera: 'chase', mode: 'race' },
     race: null, running: false, paused: false, last: 0, acc: 0,
     screen: 'title', attractT: 0,
   };
@@ -77,9 +77,17 @@ var Game = (function () {
       ui.camOpts.appendChild(b);
     });
 
-    $('btn-race').onclick = function () { beginSession('race'); };
-    $('btn-quali').onclick = function () { beginSession('timetrial'); };
-    $('btn-endless').onclick = function () { beginSession('endless'); };
+    ui.modeOpts = $('mode-opts');
+    Array.prototype.forEach.call(ui.modeOpts.children, function (b) {
+      b.onclick = function () { app.opts.mode = b.dataset.id; refreshOpts(); };
+    });
+    // 唯一的开始入口：所有选项选完之后点它
+    /* 开始按钮 = 直接发车（赛道/天气/难度/视角都已在上方选好）。
+     * 不再经过确认页，一步进入比赛。 */
+    $('btn-start').onclick = function () {
+      app.opts.mode = app.opts.mode || 'race';
+      startRace();
+    };
     $('btn-go').onclick = function () { startRace(); };
     $('btn-back').onclick = function () { showScreen('title'); };
     $('btn-again').onclick = function () { beginSession(app.race ? app.race.mode : 'race'); };
@@ -101,6 +109,7 @@ var Game = (function () {
     mark(ui.weatherOpts, app.opts.weatherId);
     mark(ui.diffOpts, app.opts.difficulty);
     mark(ui.camOpts, app.opts.camera);
+    mark(ui.modeOpts, app.opts.mode || 'race');
   }
 
   function setCamera(id) {

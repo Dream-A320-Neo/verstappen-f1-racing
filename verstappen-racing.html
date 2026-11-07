@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>MAX 33 · 极速王座 — F1 竞速 V1.8.1</title>
+<title>MAX 33 · 极速王座 — F1 竞速 V1.9.0</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { width: 100%; height: 100%; overflow: hidden; background: #07090d; }
@@ -141,18 +141,25 @@
 <div id="screen-title" class="screen hidden">
   <div class="panel">
     <div class="kicker">FORMULA 1 · 2026</div>
-    <div class="big">MAX <span class="num">33</span><br>极速王座 <span class="ver">V1.8.1</span></div>
+    <div class="big">MAX <span class="num">33</span><br>极速王座 <span class="ver">V1.9.0</span></div>
     <div class="sub">单文件 3D 竞速。六条赛道、二十台赛车、轮胎磨损与 ERS 加速。
       油门到底，把每个弯心都咬下来。</div>
-    <div class="menu">
-      <button class="btn primary" id="btn-race">大奖赛</button>
-      <button class="btn" id="btn-quali">单圈计时</button>
-      <button class="btn" id="btn-endless">无尽挑战</button>
+    <div class="row" style="margin-top:22px">
+      <div class="label">模式</div>
+      <div class="opts" id="mode-opts">
+        <button class="opt on" data-id="race">大奖赛</button>
+        <button class="opt" data-id="timetrial">单圈计时</button>
+        <button class="opt" data-id="endless">无尽挑战</button>
+      </div>
     </div>
-    <div class="row" style="margin-top:22px"><div class="label">赛道</div><div class="opts" id="track-opts"></div></div>
+    <div class="row"><div class="label">赛道</div><div class="opts" id="track-opts"></div></div>
     <div class="row"><div class="label">天气</div><div class="opts" id="weather-opts"></div></div>
     <div class="row"><div class="label">难度</div><div class="opts" id="diff-opts"></div></div>
     <div class="row"><div class="label">视角</div><div class="opts" id="cam-opts"></div></div>
+    <div class="menu" style="margin-top:26px; align-items:center">
+      <button class="btn primary" id="btn-start" style="font-size:16px; padding:15px 46px; letter-spacing:2px">开始比赛</button>
+      <span style="font-size:12px; opacity:.45; letter-spacing:.5px">先选好上面各项，再点这里发车</span>
+    </div>
     <div class="help">
       <b>W / ↑</b> 油门 · <b>S / ↓</b> 刹车 · <b>A D / ← →</b> 转向 · <b>空格</b> ERS · <b>C</b> 视角 ·
       <b>P</b> 暂停 · <b>R</b> 重开 · <b>M</b> 静音<br>
@@ -199,7 +206,7 @@
   </div>
 </div>
 
-<div id="loading">载入中… V1.8.1</div>
+<div id="loading">载入中… V1.9.0</div>
 <div id="fatal"></div>
 
 <script>
@@ -1743,7 +1750,7 @@ if (typeof module !== 'undefined' && module.exports) { module.exports = Sfx; }
 
 var Game = (function () {
   var app = {
-    opts: { trackId: 'sakhir', weatherId: 'dry', difficulty: 'normal', camera: 'chase' },
+    opts: { trackId: 'sakhir', weatherId: 'dry', difficulty: 'normal', camera: 'chase', mode: 'race' },
     race: null, running: false, paused: false, last: 0, acc: 0,
     screen: 'title', attractT: 0,
   };
@@ -1815,9 +1822,17 @@ var Game = (function () {
       ui.camOpts.appendChild(b);
     });
 
-    $('btn-race').onclick = function () { beginSession('race'); };
-    $('btn-quali').onclick = function () { beginSession('timetrial'); };
-    $('btn-endless').onclick = function () { beginSession('endless'); };
+    ui.modeOpts = $('mode-opts');
+    Array.prototype.forEach.call(ui.modeOpts.children, function (b) {
+      b.onclick = function () { app.opts.mode = b.dataset.id; refreshOpts(); };
+    });
+    // 唯一的开始入口：所有选项选完之后点它
+    /* 开始按钮 = 直接发车（赛道/天气/难度/视角都已在上方选好）。
+     * 不再经过确认页，一步进入比赛。 */
+    $('btn-start').onclick = function () {
+      app.opts.mode = app.opts.mode || 'race';
+      startRace();
+    };
     $('btn-go').onclick = function () { startRace(); };
     $('btn-back').onclick = function () { showScreen('title'); };
     $('btn-again').onclick = function () { beginSession(app.race ? app.race.mode : 'race'); };
@@ -1839,6 +1854,7 @@ var Game = (function () {
     mark(ui.weatherOpts, app.opts.weatherId);
     mark(ui.diffOpts, app.opts.difficulty);
     mark(ui.camOpts, app.opts.camera);
+    mark(ui.modeOpts, app.opts.mode || 'race');
   }
 
   function setCamera(id) {
