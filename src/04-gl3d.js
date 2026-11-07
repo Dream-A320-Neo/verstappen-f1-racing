@@ -470,10 +470,10 @@ var GL3D = (function () {
       eye = [px + fx * 0.2 + rx * 0.18, py + 1.34, pz + fz * 0.2 + rz * 0.18];
       target = [px + fx * 30, py + 1.25, pz + fz * 30];
     } else {
-      var back = 6.8, up = 2.55;   // 车尾斜上方：后 6.8m、高 2.55m
+      var back = 10.5, up = 3.4;   // 车尾斜上方（远处高位）
       // 刚性跟随：位置与视线都用车身真实航向（不插值 → 零滞后）
-      eye = [px - Math.sin(yaw) * back, py + up, pz - Math.cos(yaw) * back];   // 车尾斜上方（车后方）
-      target = [px + Math.sin(yaw) * 11, py + 1.05, pz + Math.cos(yaw) * 11];   // 朝前方看
+      eye = [px - Math.sin(yaw) * back, py + up, pz - Math.cos(yaw) * back];
+      target = [px + Math.sin(yaw) * 18, py + 1.9, pz + Math.cos(yaw) * 18];
     }
 
     var fov = cockpit ? 76 : 68;
