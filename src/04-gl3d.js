@@ -296,8 +296,8 @@ var GL3D = (function () {
       });
     }
 
-    worldMesh = b.upload();
-    return worldMesh;
+    worldMeshes.push(b.upload());
+    return worldMeshes;
   }
 
   // ---------- 车模（RB19 风格，程序化拼装）----------
