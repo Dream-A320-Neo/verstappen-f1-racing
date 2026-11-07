@@ -235,20 +235,34 @@ var Game = (function () {
     document.addEventListener('visibilitychange', function () { if (document.hidden && app.race && !app.paused) togglePause(true); });
   }
 
+  /* 手柄读取。
+   * 关键防御：很多手柄/虚拟手柄静止时摇杆会漂移（比如一直报 -0.2），
+   * 如果直接采信就会变成"一直往一个方向打方向"，表现为车自己快速转圈。
+   * 所以：① 死区放大到 0.30；② 必须按过手柄任意键/扳机才真正启用手柄。 */
+  var padArmed = false;
   function pollGamepad() {
     var pads = navigator.getGamepads ? navigator.getGamepads() : [];
     for (var i = 0; i < pads.length; i++) {
       var gp = pads[i];
       if (!gp) continue;
-      var steer = gp.axes[0] || 0;
-      if (Math.abs(steer) < 0.12) steer = 0;
-      var rt = gp.buttons[7] ? gp.buttons[7].value : 0;
-      var lt = gp.buttons[6] ? gp.buttons[6].value : 0;
-      var ers = gp.buttons[0] ? gp.buttons[0].pressed : false;
+      // 检测是否有任何按键/扳机被按下 → 只有按下过才启用手柄
+      var anyPressed = false;
+      for (var b = 0; b < gp.buttons.length; b++) {
+        if (gp.buttons[b] && (gp.buttons[b].pressed || gp.buttons[b].value > 0.3)) { anyPressed = true; break; }
+      }
       var start = gp.buttons[9] ? gp.buttons[9].pressed : false;
       if (start && !padPrev.start) togglePause();
       padPrev.start = start;
-      if (Math.abs(steer) > 0.12 || rt > 0.05 || lt > 0.05) {
+      if (anyPressed) padArmed = true;
+      if (!padArmed) continue;                       // 没按过手柄 → 完全忽略摇杆漂移
+      var steer = gp.axes[0] || 0;
+      if (Math.abs(steer) < 0.30) steer = 0;          // 死区 30%
+      var rt = gp.buttons[7] ? gp.buttons[7].value : 0;
+      var lt = gp.buttons[6] ? gp.buttons[6].value : 0;
+      if (rt < 0.12) rt = 0;
+      if (lt < 0.12) lt = 0;
+      var ers = gp.buttons[0] ? gp.buttons[0].pressed : false;
+      if (Math.abs(steer) > 0.05 || rt > 0 || lt > 0) {
         return { steer: Util.clamp(steer, -1, 1), throttle: rt, brake: lt, ers: ers, analog: true };
       }
     }
