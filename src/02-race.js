@@ -10,7 +10,7 @@
 
 var Race = (function () {
   // ---- 物理常量 ----
-  var YAW_RATE = 2.55;          // 车头角速度上限 rad/s
+  var YAW_RATE = 0.95;          // 车头角速度上限 rad/s
   var STEER_RAMP_KEY = 9;       // 键盘打方向爬升速率（约 0.33s 到满舵 → 角速度先慢后快）
   var STEER_RAMP_PAD = 26;
   var STEER_RET_KEY = 3.2;      // 松手回正（较快）

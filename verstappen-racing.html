@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>MAX 33 · 极速王座 — F1 竞速 V1.9.12</title>
+<title>MAX 33 · 极速王座 — F1 竞速 V1.9.13</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { width: 100%; height: 100%; overflow: hidden; background: #07090d; }
@@ -141,7 +141,7 @@
 <div id="screen-title" class="screen hidden">
   <div class="panel">
     <div class="kicker">FORMULA 1 · 2026</div>
-    <div class="big">MAX <span class="num">33</span><br>极速王座 <span class="ver">V1.9.12</span></div>
+    <div class="big">MAX <span class="num">33</span><br>极速王座 <span class="ver">V1.9.13</span></div>
     <div class="sub">单文件 3D 竞速。六条赛道、二十台赛车、轮胎磨损与 ERS 加速。
       油门到底，把每个弯心都咬下来。</div>
     <div class="row" style="margin-top:22px">
@@ -205,7 +205,7 @@
   </div>
 </div>
 
-<div id="loading">载入中… V1.9.12</div>
+<div id="loading">载入中… V1.9.13</div>
 <div id="fatal"></div>
 
 <script>
@@ -608,7 +608,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
 var Race = (function () {
   // ---- 物理常量 ----
-  var YAW_RATE = 2.55;          // 车头角速度上限 rad/s
+  var YAW_RATE = 0.95;          // 车头角速度上限 rad/s
   var STEER_RAMP_KEY = 9;       // 键盘打方向爬升速率（约 0.33s 到满舵 → 角速度先慢后快）
   var STEER_RAMP_PAD = 26;
   var STEER_RET_KEY = 3.2;      // 松手回正（较快）
