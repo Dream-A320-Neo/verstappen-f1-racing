@@ -302,8 +302,8 @@ var GL3D = (function () {
       Util.hex2rgb('#1d2a44'), Util.hex2rgb('#8a1620'), Util.hex2rgb('#243b2e'),
       Util.hex2rgb('#3a2a4a'), Util.hex2rgb('#4a3418'),
     ];
-    var crowdPalette = [Util.hex2rgb('#e8c547'), Util.hex2rgb('#d94f4f'), Util.hex2rgb('#5aa0e0'),
-                        Util.hex2rgb('#e8e8e8'), Util.hex2rgb('#7ac47a'), Util.hex2rgb('#d97ac4')];
+    var crowdPalette = [Util.hex2rgb('#b8a04a'), Util.hex2rgb('#9c4a4a'), Util.hex2rgb('#4a7aa8'),
+                        Util.hex2rgb('#b8b8b8'), Util.hex2rgb('#5a8a5a'), Util.hex2rgb('#8a6a8a')];
     var roof = Util.hex2rgb('#c8d0da');
     for (var si = 0; si < n; si += STAND_SPACING) {
       var seg0 = track.segments[si];
@@ -465,13 +465,13 @@ var GL3D = (function () {
     var eye, target;
     if (cockpit) {
       var fx = Math.sin(yaw), fz = Math.cos(yaw), rx = -Math.cos(yaw), rz = Math.sin(yaw);
-      eye = [px + fx * 0.2 + rx * 0.18, py + 1.02, pz + fz * 0.2 + rz * 0.18];
-      target = [px + fx * 30, py + 0.95, pz + fz * 30];
+      eye = [px + fx * 0.2 + rx * 0.18, py + 1.34, pz + fz * 0.2 + rz * 0.18];
+      target = [px + fx * 30, py + 1.25, pz + fz * 30];
     } else {
-      var back = 6.2, up = 2.05;
+      var back = 10.5, up = 3.4;
       // 刚性跟随：位置与视线都用车身真实航向（不插值 → 零滞后）
       eye = [px - Math.sin(yaw) * back, py + up, pz - Math.cos(yaw) * back];
-      target = [px + Math.sin(yaw) * 14, py + 1.1, pz + Math.cos(yaw) * 14];
+      target = [px + Math.sin(yaw) * 18, py + 1.9, pz + Math.cos(yaw) * 18];
     }
 
     var fov = cockpit ? 76 : 68;
@@ -496,7 +496,7 @@ var GL3D = (function () {
       var c = race.cars[i];
       if (c === me && cockpit) continue;         // 车手视角隐藏自己的车
       var s = Track.sample3d(track, c.z, {});
-      var wx = s.x + s.nx * c.offset, wz = s.z + s.nz * c.offset, wy = s.y + 0.02;
+      var wx = s.x + s.nx * c.offset, wz = s.z + s.nz * c.offset, wy = s.y + 0.32;   // 路面在 +0.30，车踩在路面上
       var car = buildCar(c);
       m4.compose(model, wx, wy, wz, c.heading, c.roll || 0, c.pitch || 0, 1, 1, 1);
       bindMesh(car.chassis, model);
