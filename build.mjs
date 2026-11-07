@@ -17,6 +17,13 @@ const doBump = process.argv.includes('--bump');
 // 版本号：version.txt 里存 "1.0"
 const VERSION_FILE = join(here, 'version.txt');
 if (!existsSync(VERSION_FILE)) writeFileSync(VERSION_FILE, '1.0\n', 'utf8');
+// --bump：先递增，再读版本去构建 —— 这样产物和快照都带新版本号
+if (doBump) {
+  const parts = (readFileSync(VERSION_FILE, 'utf8').trim() || '1.0').split('.').map((n) => parseInt(n, 10) || 0);
+  let major = parts[0] || 1, minor = (parts[1] || 0) + 1;
+  if (minor >= 10) { major += 1; minor = 0; }
+  writeFileSync(VERSION_FILE, `${major}.${minor}\n`, 'utf8');
+}
 const version = readFileSync(VERSION_FILE, 'utf8').trim() || '1.0';
 const tag = 'V' + version;
 
@@ -49,17 +56,8 @@ if (!existsSync(distDir)) mkdirSync(distDir);
 const snapshot = join(distDir, `verstappen-racing-${tag}.html`);
 writeFileSync(snapshot, out, 'utf8');
 
-// 3) 自动递增（V1.0 → V1.1，V1.9 → V2.0）
-if (doBump) {
-  const parts = version.split('.').map((n) => parseInt(n, 10) || 0);
-  let minor = parts[1] || 0, major = parts[0] || 1;
-  minor += 1;
-  if (minor >= 10) { major += 1; minor = 0; }
-  writeFileSync(VERSION_FILE, `${major}.${minor}\n`, 'utf8');
-}
-
 const kb = (Buffer.byteLength(out, 'utf8') / 1024).toFixed(1);
 const lines = out.split('\n').length;
 console.log(`[build] ${tag}  verstappen-racing.html  ${kb} KB  ${lines} 行  (${MODULES.length} 个模块)`);
 console.log(`[build] 版本快照 → dist/verstappen-racing-${tag}.html`);
-console.log(`[build] 当前版本 V${version}${doBump ? '（已递增到 V' + readFileSync(VERSION_FILE, 'utf8').trim() + '）' : '（未递增，改动后跑 node build.mjs --bump）'}`);
+console.log(`[build] 当前版本 V${version}${doBump ? '（本次已递增）' : '（未递增，改完跑 node build.mjs --bump）'}`);
