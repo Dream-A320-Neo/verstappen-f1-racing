@@ -208,8 +208,7 @@ var GL3D = (function () {
     loc.uLight = gl.getUniformLocation(prog, 'uLight');
     loc.uFogCol = gl.getUniformLocation(prog, 'uFogCol');
     gl.enable(gl.DEPTH_TEST);
-    gl.enable(gl.CULL_FACE);
-    gl.cullFace(gl.BACK);
+    gl.disable(gl.CULL_FACE);   // 双面渲染：避免部分四边形因缠绕顺序被剔除（路面曾因此不可见）
     gl.clearColor(0.62, 0.74, 0.86, 1);
     return true;
   }

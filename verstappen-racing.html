@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>MAX 33 · 极速王座 — F1 竞速 V1.9.1</title>
+<title>MAX 33 · 极速王座 — F1 竞速 V1.9.2</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { width: 100%; height: 100%; overflow: hidden; background: #07090d; }
@@ -141,7 +141,7 @@
 <div id="screen-title" class="screen hidden">
   <div class="panel">
     <div class="kicker">FORMULA 1 · 2026</div>
-    <div class="big">MAX <span class="num">33</span><br>极速王座 <span class="ver">V1.9.1</span></div>
+    <div class="big">MAX <span class="num">33</span><br>极速王座 <span class="ver">V1.9.2</span></div>
     <div class="sub">单文件 3D 竞速。六条赛道、二十台赛车、轮胎磨损与 ERS 加速。
       油门到底，把每个弯心都咬下来。</div>
     <div class="row" style="margin-top:22px">
@@ -205,7 +205,7 @@
   </div>
 </div>
 
-<div id="loading">载入中… V1.9.1</div>
+<div id="loading">载入中… V1.9.2</div>
 <div id="fatal"></div>
 
 <script>
@@ -1328,8 +1328,7 @@ var GL3D = (function () {
     loc.uLight = gl.getUniformLocation(prog, 'uLight');
     loc.uFogCol = gl.getUniformLocation(prog, 'uFogCol');
     gl.enable(gl.DEPTH_TEST);
-    gl.enable(gl.CULL_FACE);
-    gl.cullFace(gl.BACK);
+    gl.disable(gl.CULL_FACE);   // 双面渲染：避免部分四边形因缠绕顺序被剔除（路面曾因此不可见）
     gl.clearColor(0.62, 0.74, 0.86, 1);
     return true;
   }
