@@ -470,10 +470,10 @@ var GL3D = (function () {
       eye = [px + fx * 0.2 + rx * 0.18, py + 1.34, pz + fz * 0.2 + rz * 0.18];
       target = [px + fx * 30, py + 1.25, pz + fz * 30];
     } else {
-      var back = 10.5, up = 3.4;
+      var back = 7.2, up = 2.15;
       // 刚性跟随：位置与视线都用车身真实航向（不插值 → 零滞后）
       eye = [px - Math.sin(yaw) * back, py + up, pz - Math.cos(yaw) * back];
-      target = [px + Math.sin(yaw) * 18, py + 1.9, pz + Math.cos(yaw) * 18];
+      target = [px + Math.sin(yaw) * 22, py + 1.25, pz + Math.cos(yaw) * 22];
     }
 
     var fov = cockpit ? 76 : 68;
