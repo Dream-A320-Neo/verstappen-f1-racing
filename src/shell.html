@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
@@ -200,8 +200,8 @@
     fatal.textContent = '启动失败：\n' + (e && e.stack ? e.stack : e);
   }
   try {
-    if (!window.GL3D || !GL3D.available()) throw new Error('WebGL 初始化失败，请使用支持 WebGL 的浏览器');
     Game.init();
+    if (!GL3D.available()) throw new Error('Canvas 2D 初始化失败');
     document.getElementById('loading').classList.add('hidden');
   } catch (e) { fail(e); }
   window.addEventListener('error', function (ev) { fail(ev.error || ev.message); });
