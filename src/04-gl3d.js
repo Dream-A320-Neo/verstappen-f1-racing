@@ -230,7 +230,7 @@ var GL3D = (function () {
       /* 每 180 段切一块：单块约 1.3 万顶点，安全低于 Uint16 索引上限 65535。 */
       if (i > 0 && i % 180 === 0) { worldMeshes.push(b.upload()); b = Builder(); }
       var a = track.segments[i], c = track.segments[(i + 1) % n];
-      var gy = a.y - 0.05;
+      var gy = a.y - 0.55;                 // 草地明显压低，避免与路面抢深度
       // 用局部法向
       var n0x = -Math.cos(a.h), n0z = Math.sin(a.h);
       var n1x = -Math.cos(c.h), n1z = Math.sin(c.h);
@@ -239,13 +239,13 @@ var GL3D = (function () {
       b.quadUp(P(a, n0x, n0z, -(RU + 80), gy), P(c, n1x, n1z, -(RU + 80), gy), P(c, n1x, n1z, 0, gy), P(a, n0x, n0z, 0, gy), grass);
       b.quadUp(P(a, n0x, n0z, 0, gy), P(c, n1x, n1z, 0, gy), P(c, n1x, n1z, RU + 80, gy), P(a, n0x, n0z, RU + 80, gy), grass);
       // 缓冲区
-      b.quadUp(P(a, n0x, n0z, -(RU), a.y + 0.02), P(c, n1x, n1z, -(RU), c.y + 0.02), P(c, n1x, n1z, -(RH + CW), c.y + 0.02), P(a, n0x, n0z, -(RH + CW), a.y + 0.02), runoff);
-      b.quadUp(P(a, n0x, n0z, RH + CW, a.y + 0.02), P(c, n1x, n1z, RH + CW, c.y + 0.02), P(c, n1x, n1z, RU, c.y + 0.02), P(a, n0x, n0z, RU, a.y + 0.02), runoff);
+      b.quadUp(P(a, n0x, n0z, -(RU), a.y + 0.12), P(c, n1x, n1z, -(RU), c.y + 0.12), P(c, n1x, n1z, -(RH + CW), c.y + 0.12), P(a, n0x, n0z, -(RH + CW), a.y + 0.12), runoff);
+      b.quadUp(P(a, n0x, n0z, RH + CW, a.y + 0.12), P(c, n1x, n1z, RH + CW, c.y + 0.12), P(c, n1x, n1z, RU, c.y + 0.12), P(a, n0x, n0z, RU, a.y + 0.12), runoff);
       // 路面
-      b.quadUp(P(a, n0x, n0z, -RH, a.y + 0.05), P(c, n1x, n1z, -RH, c.y + 0.05), P(c, n1x, n1z, RH, c.y + 0.05), P(a, n0x, n0z, RH, a.y + 0.05), road);
+      b.quadUp(P(a, n0x, n0z, -RH, a.y + 0.30), P(c, n1x, n1z, -RH, c.y + 0.30), P(c, n1x, n1z, RH, c.y + 0.30), P(a, n0x, n0z, RH, a.y + 0.30), road);
       // 边线
-      b.quadUp(P(a, n0x, n0z, -RH, a.y + 0.06), P(c, n1x, n1z, -RH, c.y + 0.06), P(c, n1x, n1z, -RH + 0.5, c.y + 0.06), P(a, n0x, n0z, -RH + 0.5, a.y + 0.06), lineC);
-      b.quadUp(P(a, n0x, n0z, RH - 0.5, a.y + 0.06), P(c, n1x, n1z, RH - 0.5, c.y + 0.06), P(c, n1x, n1z, RH, c.y + 0.06), P(a, n0x, n0z, RH, a.y + 0.06), lineC);
+      b.quadUp(P(a, n0x, n0z, -RH, a.y + 0.36), P(c, n1x, n1z, -RH, c.y + 0.36), P(c, n1x, n1z, -RH + 0.5, c.y + 0.36), P(a, n0x, n0z, -RH + 0.5, a.y + 0.36), lineC);
+      b.quadUp(P(a, n0x, n0z, RH - 0.5, a.y + 0.36), P(c, n1x, n1z, RH - 0.5, c.y + 0.36), P(c, n1x, n1z, RH, c.y + 0.36), P(a, n0x, n0z, RH, a.y + 0.36), lineC);
       // 3D 路肩：块状（每段两端缩进 1.5%，留约 9cm 接缝）
       if (a.curb) {
         var kc = (Math.floor(i / 2) % 2 === 0) ? kerbA : kerbB;
@@ -259,7 +259,7 @@ var GL3D = (function () {
           var ia = mixp(a, c, n0x, n0z, RH, 0.14, in0), ib2 = mixp(a, c, n1x, n1z, RH, 0.14, in0);
           var ia2 = mixp(a, c, n0x, n0z, RH, 0.14, in1), ib3 = mixp(a, c, n1x, n1z, RH, 0.14, in1);
           b.quadUp(ia2, ib3, kd, kc2, kc);
-          b.quad([ia[0], a.y + 0.02, ia[2]], [kb[0], c.y + 0.02, kb[2]], [kc2[0], a.y + 0.14, kc2[2]], ia2, Util.shade(kc, 0.8));
+          b.quad([ia[0], a.y + 0.02, ia[2]], [kb[0], c.y + 0.02, kb[2]], [kc2[0], a.y + 0.45, kc2[2]], ia2, Util.shade(kc, 0.8));
         });
       }
       // 护栏（两侧，高 0.95m）
@@ -276,9 +276,9 @@ var GL3D = (function () {
     for (var r = 0; r < 2; r++) for (var q = -9; q < 9; q += 2) {
       var C = (r + q) % 2 === 0 ? lineC : Util.hex2rgb('#1a1d22');
       var x0 = s0.x + (-Math.cos(s0.h)) * q, z0 = s0.z + Math.sin(s0.h) * q;
-      b.quadUp([x0, s0.y + 0.07, z0], [x0 + Math.sin(s0.h) * 2, s0.y + 0.07, z0 + Math.cos(s0.h) * 2],
-        [x0 + Math.sin(s0.h) * 2 - Math.cos(s0.h) * 1, s0.y + 0.07, z0 + Math.cos(s0.h) * 2 + Math.sin(s0.h) * 1],
-        [x0 - Math.cos(s0.h) * 1, s0.y + 0.07, z0 + Math.sin(s0.h) * 1], C);
+      b.quadUp([x0, s0.y + 0.42, z0], [x0 + Math.sin(s0.h) * 2, s0.y + 0.42, z0 + Math.cos(s0.h) * 2],
+        [x0 + Math.sin(s0.h) * 2 - Math.cos(s0.h) * 1, s0.y + 0.42, z0 + Math.cos(s0.h) * 2 + Math.sin(s0.h) * 1],
+        [x0 - Math.cos(s0.h) * 1, s0.y + 0.42, z0 + Math.sin(s0.h) * 1], C);
     }
     // 维修区挡墙（覆盖整个让位范围，防止"护栏断开"）
     var pit = track.pitZone;
@@ -475,7 +475,7 @@ var GL3D = (function () {
     }
 
     var fov = cockpit ? 76 : 68;
-    m4.perspective(proj, fov * Math.PI / 180, canvas.width / Math.max(1, canvas.height), 0.5, 900);
+    m4.perspective(proj, fov * Math.PI / 180, canvas.width / Math.max(1, canvas.height), 1.2, 4000);
     m4.lookAt(view, eye[0], eye[1], eye[2], target[0], target[1], target[2], 0, 1, 0);
     m4.multiply(vp, proj, view);
 
